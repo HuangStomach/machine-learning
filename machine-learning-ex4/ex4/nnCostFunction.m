@@ -42,22 +42,23 @@ Theta2_grad = zeros(size(Theta2));
 
 % 首选计算出每一个隐藏层
 X = [ones(m, 1), X];
-z1 = sigmoid(Theta1 * X');
-a2 = [ones(1, size(z1, 2)); z1];
-a3 = sigmoid(Theta2 * a2);
+a1 = X;
+z2 = X * Theta1';
+a2 = sigmoid(z2);
+a2 = [ones(m, 1), a2];
+z3 = a2 * Theta2';
+a3 = sigmoid(z3);
 h = a3;
 % 得到输出层并且得到消费函数
 
-Y = zeros(num_labels, m);
 % 将Y矩阵化
 % 每列都是0，当前的y值的行变为1
-for i = 1: num_labels,
-    Y(i, :) = (y == i);
-end;
+tmp = eye(num_labels);
+Y = tmp(y, :);
 
 % 将 Theta1 和  Theta2 的 theta0 去掉或者变为0
-Theta1Reg = Theta1(:,2:size(Theta1,2));
-Theta2Reg = Theta2(:,2:size(Theta2,2));
+Theta1Reg = Theta1(:, 2: end);
+Theta2Reg = Theta2(:, 2: end);
 
 J = sum(sum(-Y .* log(h) - (1 - Y) .* log(1 - h))) / m;
 J = J + lambda / (2 * m) * (sum(sum(Theta1Reg .^ 2)) + sum(sum(Theta2Reg .^ 2)));
@@ -78,24 +79,28 @@ J = J + lambda / (2 * m) * (sum(sum(Theta1Reg .^ 2)) + sum(sum(Theta2Reg .^ 2)))
 %               first time.
 %
 
-for k = 1: m
-    a1 = X(k,:);
-    z2 = Theta1 * a1';
-    a2 = sigmoid(z2);
-    a2 = [1 ; a2];
-    a3 = sigmoid(Theta2 * a2);
+for i = 1 : m
+    a1_i = X(i, :);
+    z2_i = a1_i * Theta1';
+    a2_i = sigmoid(z2_i);
+    % add bias to vector a2_i
+    a2_i = [1, a2_i];
+    % ======= LAYER 3 =======
+    % sigmoid input (can be vector or matrix - depending on Theta2)
+    z3_i = a2_i * Theta2';
+    % activation unit (this can be matrix or vector, depending on output of sigmoid)
+    a3_i = sigmoid(z3_i);
+    % compute output error
+    delta_3 = (a3_i - Y(i, :));
+    % compute hidden layer error
+    % ignore the bias term and calculate error for layer 2
+    z2_i = [1, z2_i];
+    delta_2 = (Theta2' * delta_3')' .* sigmoidGradient(z2_i);
+    delta_2 = delta_2(2: end);
 
-    % 使用反推算法计算误差
-    d3 = a3 - Y(:,k);
-    
-    % 每一个 d 都为 后一个 d 与 theta并且通过对z2求导得来
-    z2 = [1; z2];
-    d2 = (Theta2' * d3) .* sigmoidGradient(z2);
-    % 去掉 d20
-    d2 = d2(2: end);
-
-    Theta2_grad = (Theta2_grad + d3 * a2');
-    Theta1_grad = (Theta1_grad + d2 * a1); % input层不用求导
+    % Transition matrix error accumulators
+    Theta1_grad = Theta1_grad + delta_2' * a1_i;
+    Theta2_grad = Theta2_grad + delta_3' * a2_i;
 end;
 
 % Part 3: Implement regularization with the cost function and gradients.
@@ -107,11 +112,8 @@ end;
 % -------------------------------------------------------------
 
 % 0 列进行不参与 lamda 的规范化
-Theta1_grad(:, 1) = Theta1_grad(:, 1) ./ m;
-Theta2_grad(:, 1) = Theta2_grad(:, 1) ./ m;
-
-Theta1_grad(2, end) = Theta1_grad(2, end) ./ m + lambda / m * Theta1_grad(2, end);
-Theta2_grad(2, end) = Theta2_grad(2, end) ./ m + lambda / m * Theta1_grad(2, end);
+Theta1_grad = Theta1_grad / m + (lambda / m) * [zeros(size(Theta1, 1), 1), Theta1(:, 2:end)];
+Theta2_grad = Theta2_grad / m + (lambda / m) * [zeros(size(Theta2, 1), 1), Theta2(:, 2:end)];
 
 % =========================================================================
 

@@ -12,6 +12,13 @@ X_train, X_test, y_train, y_test = train_test_split(
     iris_dataset['data'], iris_dataset['target'], random_state=0
 )
 
-iris_dataframe = pd.DataFrame(X_train, columns=iris_dataset.feature_names)
-grr = pd.plotting.scatter_matrix(iris_dataframe, c=y_train, figsize=(15, 15), hist_kwds={'bins': 20}, s=60, alpha=.8)
-plt.show()
+from sklearn.neighbors import KNeighborsClassifier
+knn = KNeighborsClassifier(n_neighbors=1)
+knn.fit(X_train, y_train)
+
+X_new = np.array([[5, 2.9, 1, .2]])
+prediction = knn.predict(X_new)
+print("Predicted target name: {}".format(iris_dataset['target_names'][prediction]))
+
+y_pred = knn.predict(X_test)
+print("Test set score: {:.2f}".format(knn.score(X_test, y_test)))

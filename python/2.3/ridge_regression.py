@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import mglearn
 
-
 X, y = mglearn.datasets.load_extended_boston()
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)

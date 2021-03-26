@@ -1,4 +1,3 @@
-
 import matplotlib
 matplotlib.use('MacOSX')
 import numpy as np

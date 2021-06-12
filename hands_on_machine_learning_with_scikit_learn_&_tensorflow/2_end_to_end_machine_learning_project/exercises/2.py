@@ -10,10 +10,10 @@ param_grid = [
 ]
 
 svm_reg = SVR()
-grid_search = RandomizedSearchCV(svm_reg, param_grid, cv = 5, return_train_score=True, n_jobs=-1)
-grid_search.fit(Base.housing_prepared, Base.housing_labels)
-svr = grid_search.best_estimator_
-print(grid_search.cv_results_)
+random_search = RandomizedSearchCV(svm_reg, param_grid, cv = 5, return_train_score=True, n_jobs=-1)
+random_search.fit(Base.housing_prepared, Base.housing_labels)
+svr = random_search.best_estimator_
+print(random_search.cv_results_)
 print(svr)
 
 X_test = Base.strat_test_set.drop('median_house_value', axis=1)

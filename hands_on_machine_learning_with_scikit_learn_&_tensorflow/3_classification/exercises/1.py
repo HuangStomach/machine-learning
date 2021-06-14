@@ -21,3 +21,7 @@ grid_search.fit(X_train, y_train)
 knn = grid_search.best_estimator_
 print(grid_search.best_params_)
 print(knn.score(X_test, y_test))
+'''
+{'n_neighbors': 5, 'weights': 'distance'}
+0.9705714285714285
+'''

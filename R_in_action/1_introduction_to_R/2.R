@@ -1,0 +1,6 @@
+setwd("~/Projects/machine-learning/R_in_action/1_introduction_to_R")
+options()
+options(digits = 3)
+x <- runif(20)
+summary(x)
+hist(x)

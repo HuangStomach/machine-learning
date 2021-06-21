@@ -1,0 +1,1 @@
+opar <- par(no.readonly = TRUE)

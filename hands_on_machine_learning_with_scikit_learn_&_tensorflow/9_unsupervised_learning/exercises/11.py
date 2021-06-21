@@ -2,7 +2,7 @@ from sklearn.datasets import fetch_olivetti_faces
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
 import numpy as np
 
 olivetti = fetch_olivetti_faces()
@@ -26,22 +26,16 @@ X_train_pca = pca.fit_transform(X_train)
 X_valid_pca = pca.transform(X_valid)
 X_test_pca = pca.transform(X_test)
 
-kmeans = KMeans(n_clusters=120, random_state=42).fit(X_train_pca)
+kmeans = KMeans(n_clusters=120, random_state=42)
+kmeans.fit(X_train_pca)
+X_train_reduced = kmeans.transform(X_train_pca)
+X_valid_reduced = kmeans.transform(X_valid_pca)
+X_test_reduced = kmeans.transform(X_test_pca)
 
-def plot_faces(faces, labels, n_cols=5):
-    faces = faces.reshape(-1, 64, 64)
-    n_rows = (len(faces) - 1) // n_cols + 1
-    plt.figure(figsize=(n_cols, n_rows * 1.1))
-    for index, (face, label) in enumerate(zip(faces, labels)):
-        plt.subplot(n_rows, n_cols, index + 1)
-        plt.imshow(face, cmap="gray")
-        plt.axis("off")
-        plt.title(label)
-    plt.show()
+X_train_extended = np.c_[X_train_pca, X_train_reduced]
+X_valid_extended = np.c_[X_valid_pca, X_valid_reduced]
+X_test_extended = np.c_[X_test_pca, X_test_reduced]
 
-for cluster_id in np.unique(kmeans.labels_):
-    print("Cluster", cluster_id)
-    in_cluster = kmeans.labels_==cluster_id
-    faces = X_train[in_cluster]
-    labels = y_train[in_cluster]
-    plot_faces(faces, labels)
+clf = RandomForestClassifier(n_estimators=150, random_state=42)
+clf.fit(X_train_extended, y_train)
+print(clf.score(X_valid_extended, y_valid))

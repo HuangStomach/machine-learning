@@ -2,7 +2,15 @@ from sklearn.mixture import GaussianMixture
 from sklearn.datasets import fetch_olivetti_faces
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.ensemble import RandomForestClassifier
 import numpy as np
+
+def reconstruction_errors(pca, X):
+    X_pca = pca.transform(X)
+    X_reconstructed = pca.inverse_transform(X_pca)
+    mse = np.square(X_reconstructed - X).mean(axis=-1)
+    return mse
 
 olivetti = fetch_olivetti_faces()
 
@@ -25,12 +33,8 @@ X_train_pca = pca.fit_transform(X_train)
 X_valid_pca = pca.transform(X_valid)
 X_test_pca = pca.transform(X_test)
 
-gm = GaussianMixture(n_components=40, random_state=42)
-y_pred = gm.fit_predict(X_train_pca)
+reconstruction_errors(pca, X_train).mean()
 
-n_gen_faces = 20
-gen_faces_reduced, y_gen_faces = gm.sample(n_samples=n_gen_faces)
-gen_faces = pca.inverse_transform(gen_faces_reduced)
 
 n_rotated = 4
 rotated = np.transpose(X_train[:n_rotated].reshape(-1, 64, 64), axes=[0, 2, 1])
@@ -51,5 +55,6 @@ X_bad_faces = np.r_[rotated, flipped, darkened]
 y_bad = np.concatenate([y_rotated, y_flipped, y_darkened])
 
 X_bad_faces_pca = pca.transform(X_bad_faces)
-gm.score_samples(X_bad_faces_pca)
-print(gm.score_samples(X_train_pca[:10]))
+
+X_bad_faces_reconstructed = pca.inverse_transform(X_bad_faces_pca)
+reconstruction_errors(pca, X_bad_faces).mean()

@@ -1,0 +1,6 @@
+print(runif(5))
+print(runif(5))
+set.seed(1234)
+print(runif(5))
+set.seed(1234)
+print(runif(5))
